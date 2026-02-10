@@ -1,6 +1,7 @@
 services:
   - type: web
     name: "barbershop-booking"
+    plan: "free"
     env: "python"
     buildCommand: "sh build.sh"
     startCommand: "gunicorn barbershop.wsgi:application"
