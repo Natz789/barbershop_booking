@@ -1,0 +1,56 @@
+<!-- payments/templates/payments/gcash_payment.html -->
+
+{% extends 'base/base.html' %}
+
+{% block title %}GCash Payment - Barbershop{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+    <div class="card-header">GCash Payment</div>
+    
+    <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+        <h3>Amount to Pay</h3>
+        <p style="font-size: 2rem; font-weight: bold; color: var(--secondary-color);">
+            ₱{{ payment.amount }}
+        </p>
+    </div>
+    
+    {% if gcash_qr %}
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <h3>Scan QR Code</h3>
+            <img src="{{ gcash_qr.qr_image.url }}" alt="GCash QR Code" style="max-width: 300px; border: 2px solid #ddd; border-radius: 8px; padding: 1rem;">
+            <p style="margin-top: 1rem;">
+                <strong>Account Name:</strong> {{ gcash_qr.account_name }}<br>
+                <strong>Account Number:</strong> {{ gcash_qr.account_number }}
+            </p>
+        </div>
+        
+        <div class="alert alert-info">
+            <strong>Instructions:</strong>
+            <ol style="margin: 0.5rem 0 0 1.5rem;">
+                <li>Scan the QR code using your GCash app</li>
+                <li>Enter the amount shown above</li>
+                <li>Complete the payment</li>
+                <li>Enter your GCash reference number below</li>
+            </ol>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>GCash Reference Number:</label>
+                <input type="text" name="reference_number" class="form-control" placeholder="Enter your GCash reference number" required>
+            </div>
+            
+            <button type="submit" class="btn btn-success btn-block">Submit Reference Number</button>
+            <a href="{% url 'booking:appointment_detail' payment.appointment.pk %}" class="btn btn-secondary btn-block" style="margin-top: 0.5rem;">Cancel</a>
+        </form>
+    {% else %}
+        <div class="alert alert-error">
+            <p>GCash QR code is not available. Please contact the administrator or choose "Pay After Service" option.</p>
+            <a href="{% url 'payments:select_payment' payment.appointment.pk %}" class="btn btn-primary">Back to Payment Options</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

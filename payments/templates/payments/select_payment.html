@@ -1,0 +1,62 @@
+<!-- payments/templates/payments/select_payment.html -->
+
+{% extends 'base/base.html' %}
+
+{% block title %}Select Payment Method - Barbershop{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+    <div class="card-header">Select Payment Method</div>
+    
+    <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+        <h3>Appointment Summary</h3>
+        <p><strong>Service:</strong> {{ appointment.service.name }}</p>
+        <p><strong>Barber:</strong> {{ appointment.barber.name }}</p>
+        <p><strong>Date:</strong> {{ appointment.appointment_date }}</p>
+        <p><strong>Time:</strong> {{ appointment.appointment_time }}</p>
+        <p style="font-size: 1.5rem; font-weight: bold; color: var(--secondary-color);">
+            Total: ₱{{ appointment.service.price }}
+        </p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <h3 style="margin-bottom: 1rem;">Choose Payment Method:</h3>
+        
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; padding: 1rem; border: 2px solid #ddd; border-radius: 4px; cursor: pointer;">
+                <input type="radio" name="payment_method" value="pay_after" required>
+                <strong>Pay After Service</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #666;">Pay in cash or card after your service is completed.</p>
+            </label>
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; padding: 1rem; border: 2px solid #ddd; border-radius: 4px; cursor: pointer;">
+                <input type="radio" name="payment_method" value="gcash" required>
+                <strong>GCash Payment</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #666;">Pay now using GCash QR code.</p>
+            </label>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block">Confirm Payment Method</button>
+        <a href="{% url 'booking:my_appointments' %}" class="btn btn-secondary btn-block" style="margin-top: 0.5rem;">Cancel</a>
+    </form>
+</div>
+
+<style>
+    input[type="radio"]:checked + strong {
+        color: var(--primary-color);
+    }
+    
+    input[type="radio"]:checked ~ p {
+        color: var(--dark-text);
+    }
+    
+    label:has(input[type="radio"]:checked) {
+        border-color: var(--primary-color);
+        background-color: #f0f8ff;
+    }
+</style>
+{% endblock %}

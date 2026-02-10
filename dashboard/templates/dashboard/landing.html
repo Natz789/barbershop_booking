@@ -1,0 +1,104 @@
+<!-- dashboard/templates/dashboard/landing.html -->
+
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Welcome to Barbershop - Book Your Appointment Today{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 4rem 0; text-align: center; margin: -2rem -20px 2rem -20px;">
+    <div class="container">
+        <h1 style="font-size: 3rem; margin-bottom: 1rem; color: white;">Welcome to Our Barbershop</h1>
+        <p style="font-size: 1.3rem; margin-bottom: 2rem; color: #ecf0f1;">Professional grooming services by expert barbers</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'accounts:register' %}" class="btn btn-success" style="font-size: 1.2rem; padding: 1rem 2rem;">Get Started</a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-secondary" style="font-size: 1.2rem; padding: 1rem 2rem; background: white; color: #2c3e50;">Login</a>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div style="margin-bottom: 3rem;">
+    <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">Why Choose Us?</h2>
+    <div class="grid grid-3">
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">💈</div>
+            <h3>Expert Barbers</h3>
+            <p>Skilled professionals with years of experience</p>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📅</div>
+            <h3>Easy Booking</h3>
+            <p>Book your appointment online in minutes</p>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">💳</div>
+            <h3>Flexible Payment</h3>
+            <p>Pay after service or via GCash</p>
+        </div>
+    </div>
+</div>
+
+<!-- Services Section -->
+{% if services %}
+<div style="margin-bottom: 3rem;">
+    <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">Our Services</h2>
+    <div class="grid grid-3">
+        {% for service in services %}
+        <div class="service-card">
+            {% if service.image %}
+                <img src="{{ service.image.url }}" alt="{{ service.name }}">
+            {% else %}
+                <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                    💇
+                </div>
+            {% endif %}
+            <div class="service-card-body">
+                <h3>{{ service.name }}</h3>
+                <p>{{ service.description|truncatewords:15 }}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                    <span class="service-price">₱{{ service.price }}</span>
+                    <span style="color: var(--light-text);">{{ service.duration_minutes }} min</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Barbers Section -->
+{% if barbers %}
+<div style="margin-bottom: 3rem;">
+    <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">Meet Our Barbers</h2>
+    <div class="grid grid-3">
+        {% for barber in barbers %}
+        <div class="barber-card">
+            {% if barber.photo %}
+                <img src="{{ barber.photo.url }}" alt="{{ barber.name }}">
+            {% else %}
+                <div style="width: 100%; height: 250px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem;">
+                    👨‍🦰
+                </div>
+            {% endif %}
+            <div class="barber-card-body">
+                <h3>{{ barber.name }}</h3>
+                <p class="barber-specialization">{{ barber.specialization }}</p>
+                {% if barber.bio %}
+                    <p style="margin-top: 0.5rem; color: var(--dark-text);">{{ barber.bio|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Call to Action -->
+<div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 3rem;">
+    <h2 style="color: white; margin-bottom: 1rem;">Ready to Look Your Best?</h2>
+    <p style="font-size: 1.2rem; margin-bottom: 2rem; color: #ecf0f1;">Join us today and book your first appointment</p>
+    <a href="{% url 'accounts:register' %}" class="btn" style="background: white; color: #667eea; font-size: 1.2rem; padding: 1rem 2rem;">Sign Up Now</a>
+</div>
+{% endblock %}

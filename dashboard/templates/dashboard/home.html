@@ -1,0 +1,267 @@
+<!-- dashboard/templates/dashboard/home.html -->
+
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}
+{% if is_admin %}Admin Dashboard{% else %}My Dashboard{% endif %} - Barbershop
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #c0392b 0%, #8e44ad 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .admin-header h1 {
+        color: white;
+        margin: 0;
+    }
+
+    .customer-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .customer-header h1 {
+        color: white;
+        margin: 0;
+    }
+
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 50%;
+        transform: translate(30%, -30%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% if is_admin %}
+<!-- ========== ADMIN DASHBOARD ========== -->
+
+<div class="admin-header">
+    <h1>📊 Admin Dashboard</h1>
+    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Manage appointments, barbers, and services</p>
+</div>
+
+<!-- Quick Actions -->
+<div class="card" style="background: #f8f9fa; margin-bottom: 2rem;">
+    <h3 style="margin-top: 0; color: var(--dark-text);">⚡ Quick Actions</h3>
+    <div class="btn-group">
+        <a href="{% url 'dashboard:admin_appointments' %}" class="btn btn-primary">📅 View All Appointments</a>
+        <a href="{% url 'admin:index' %}" class="btn btn-secondary">⚙️ Admin Panel</a>
+        <a href="{% url 'admin:booking_appointment_add' %}" class="btn btn-success">➕ Create Appointment</a>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-2" style="margin-bottom: 2rem;">
+    <div class="stat-card" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white;">
+        <h3 style="color: white; opacity: 0.9;">📊 Total Appointments</h3>
+        <div class="stat-value" style="color: white;">{{ total_appointments }}</div>
+        <p style="color: white; opacity: 0.8; margin-top: 0.5rem;">All time bookings</p>
+    </div>
+
+    <div class="stat-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white;">
+        <h3 style="color: white; opacity: 0.9;">⏳ Pending</h3>
+        <div class="stat-value" style="color: white;">{{ pending_appointments }}</div>
+        <p style="color: white; opacity: 0.8; margin-top: 0.5rem;">Awaiting confirmation</p>
+    </div>
+
+    <div class="stat-card" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white;">
+        <h3 style="color: white; opacity: 0.9;">📅 Today</h3>
+        <div class="stat-value" style="color: white;">{{ today_appointments }}</div>
+        <p style="color: white; opacity: 0.8; margin-top: 0.5rem;">Scheduled for today</p>
+    </div>
+
+    <div class="stat-card" style="background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%); color: white;">
+        <h3 style="color: white; opacity: 0.9;">💈 Active Barbers</h3>
+        <div class="stat-value" style="color: white;">{{ total_barbers }}</div>
+        <p style="color: white; opacity: 0.8; margin-top: 0.5rem;">Currently available</p>
+    </div>
+</div>
+
+<!-- Recent Appointments -->
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="margin: 0;">📋 Recent Appointments</h2>
+        <a href="{% url 'dashboard:admin_appointments' %}" class="btn btn-primary">View All</a>
+    </div>
+
+    {% if recent_appointments %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Barber</th>
+                    <th>Service</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in recent_appointments %}
+                <tr>
+                    <td><strong>#{{ appointment.id }}</strong></td>
+                    <td>{{ appointment.customer.username }}</td>
+                    <td>{{ appointment.barber.name }}</td>
+                    <td>{{ appointment.service.name }}</td>
+                    <td>
+                        {{ appointment.appointment_date|date:"M d, Y" }}<br>
+                        <small style="color: var(--light-text);">{{ appointment.appointment_time|time:"g:i A" }}</small>
+                    </td>
+                    <td><span class="badge badge-{{ appointment.status }}">{{ appointment.get_status_display }}</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'booking:appointment_detail' appointment.pk %}"
+                            class="btn btn-info btn-sm">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 2rem; color: var(--light-text);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📅</div>
+        <p>No appointments yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% else %}
+<!-- ========== CUSTOMER DASHBOARD ========== -->
+
+<div class="customer-header">
+    <h1>👋 Welcome back, {{ user.username }}!</h1>
+    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Manage your bookings and appointments</p>
+</div>
+
+<!-- Quick Book Card -->
+<div class="card"
+    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 2rem;">
+    <div style="text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">💇</div>
+        <h2 style="color: white; margin-bottom: 1rem;">Ready for a Fresh Look?</h2>
+        <p style="color: #ecf0f1; margin-bottom: 1.5rem; font-size: 1.1rem;">Book your next appointment and keep your
+            style fresh!</p>
+        <a href="{% url 'booking:create' %}" class="btn btn-success" style="font-size: 1.1rem; padding: 1rem 2rem;">📅
+            Book New Appointment</a>
+    </div>
+</div>
+
+<!-- Upcoming Appointments -->
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="margin: 0;">📅 Upcoming Appointments</h2>
+        <a href="{% url 'booking:my_appointments' %}" class="btn btn-secondary">View All</a>
+    </div>
+
+    {% if upcoming_appointments %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Barber</th>
+                    <th>Service</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in upcoming_appointments %}
+                <tr>
+                    <td>
+                        <strong>{{ appointment.barber.name }}</strong>
+                        {% if appointment.barber.specialization %}
+                        <br><small style="color: var(--light-text);">{{ appointment.barber.specialization }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ appointment.service.name }}<br>
+                        <small style="color: var(--light-text);">₱{{ appointment.service.price }}</small>
+                    </td>
+                    <td>
+                        {{ appointment.appointment_date|date:"M d, Y" }}<br>
+                        <small style="color: var(--light-text);">{{ appointment.appointment_time|time:"g:i A" }}</small>
+                    </td>
+                    <td><span class="badge badge-{{ appointment.status }}">{{ appointment.get_status_display }}</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'booking:appointment_detail' appointment.pk %}"
+                            class="btn btn-info btn-sm">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
+        <h3>No Upcoming Appointments</h3>
+        <p style="color: var(--light-text); margin-bottom: 2rem;">You don't have any appointments scheduled.</p>
+        <a href="{% url 'booking:create' %}" class="btn btn-primary">Book Your First Appointment</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Recent History -->
+{% if user_appointments %}
+<div class="card">
+    <h2 style="margin-bottom: 1.5rem;">📋 Recent History</h2>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Barber</th>
+                    <th>Service</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in user_appointments %}
+                <tr>
+                    <td>{{ appointment.barber.name }}</td>
+                    <td>{{ appointment.service.name }}</td>
+                    <td>
+                        {{ appointment.appointment_date|date:"M d, Y" }}<br>
+                        <small style="color: var(--light-text);">{{ appointment.appointment_time|time:"g:i A" }}</small>
+                    </td>
+                    <td><span class="badge badge-{{ appointment.status }}">{{ appointment.get_status_display }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

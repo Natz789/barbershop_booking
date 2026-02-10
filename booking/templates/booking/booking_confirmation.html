@@ -1,0 +1,376 @@
+<!-- booking/templates/booking/booking_confirmation.html -->
+
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Booking Confirmed - Barbershop{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --ticket-bg: #fff;
+        --ticket-border: #e0e0e0;
+        --ticket-accent: #667eea;
+        --gcash-blue: #007dfe;
+    }
+
+    .confirmation-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    /* Ticket Styling */
+    .ticket-card {
+        background: var(--ticket-bg);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 2rem;
+        border: 1px solid var(--ticket-border);
+    }
+
+    .ticket-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ticket-header h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #fff;
+    }
+
+    .ticket-body {
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        position: relative;
+    }
+
+    .ticket-info h1 {
+        font-size: 2.5rem;
+        margin: 0 0 1rem 0;
+        color: var(--primary-color);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .info-item label {
+        display: block;
+        font-size: 0.8rem;
+        color: #888;
+        text-transform: uppercase;
+        margin-bottom: 0.2rem;
+    }
+
+    .info-item span {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .ticket-queue {
+        border-left: 2px dashed var(--ticket-border);
+        padding-left: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .queue-label {
+        font-size: 0.9rem;
+        color: #888;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .queue-number {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--ticket-accent);
+        line-height: 1;
+    }
+
+    /* Payment Section */
+    .payment-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .payment-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .payment-card {
+        border: 2px solid #eee;
+        border-radius: 15px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .payment-card:hover {
+        border-color: var(--ticket-accent);
+        background: #f8faff;
+    }
+
+    .payment-card.active {
+        border-color: var(--ticket-accent);
+        background: #f0f4ff;
+    }
+
+    .payment-card input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .payment-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .payment-card h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.1rem;
+    }
+
+    .payment-card p {
+        font-size: 0.85rem;
+        color: #666;
+        margin: 0;
+    }
+
+    /* GCash Detail Area */
+    .gcash-details {
+        display: none;
+        background: #f0f7ff;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #cce5ff;
+        animation: slideDown 0.4s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .qr-container {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .qr-image {
+        max-width: 200px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        background: white;
+    }
+
+    .gcash-info {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .reference-input {
+        margin-top: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .ticket-body {
+            grid-template-columns: 1fr;
+        }
+
+        .ticket-queue {
+            border-left: none;
+            border-top: 2px dashed var(--ticket-border);
+            padding-left: 0;
+            padding-top: 2rem;
+        }
+
+        .payment-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">✨</div>
+        <h1 style="margin: 0; color: #333;">Booking Confirmed!</h1>
+        <p style="color: #666;">Thank you for choosing our service. See you soon!</p>
+    </div>
+
+    <!-- The Ticket -->
+    <div class="ticket-card">
+        <div class="ticket-header">
+            <h2>Service Ticket</h2>
+            <span>#{{ appointment.id }}</span>
+        </div>
+        <div class="ticket-body">
+            <div class="ticket-info">
+                <h1>{{ appointment.service.name }}</h1>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Date</label>
+                        <span>{{ appointment.appointment_date|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Time</label>
+                        <span>{{ appointment.appointment_time|time:"g:i A" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Barber</label>
+                        <span>{{ appointment.barber.name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Amount</label>
+                        <span style="color: var(--secondary-color);">₱{{ appointment.service.price }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ticket-queue">
+                <div class="queue-label">Queue No.</div>
+                <div class="queue-number">{{ appointment.queue_number|default:"--" }}</div>
+                <p style="font-size: 0.75rem; color: #999; margin-top: 1rem;">Today's Sequence</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Section -->
+    <div class="payment-section">
+        <form method="post" id="payment-form">
+            {% csrf_token %}
+            <div class="section-title">
+                <span>💳</span> Select Payment Method
+            </div>
+
+            <div class="payment-options">
+                <label class="payment-card" id="card-pay-later">
+                    <input type="radio" name="payment_method" value="pay_after" checked onclick="toggleGCash(false)">
+                    <div class="payment-icon">🕐</div>
+                    <h3>Pay Later</h3>
+                    <p>Pay at the shop after your service</p>
+                </label>
+
+                <label class="payment-card" id="card-pay-now">
+                    <input type="radio" name="payment_method" value="gcash" onclick="toggleGCash(true)">
+                    <div class="payment-icon">📱</div>
+                    <h3>Pay Now</h3>
+                    <p>Send payment via GCash QR Code</p>
+                </label>
+            </div>
+
+            <!-- GCash Details (Hidden by default) -->
+            <div id="gcash-details-area" class="gcash-details">
+                {% if gcash_qr and gcash_qr.qr_image %}
+                <div class="qr-container">
+                    <h3>Scan to Pay</h3>
+                    <img src="{{ gcash_qr.qr_image.url }}" alt="GCash QR Code" class="qr-image">
+                </div>
+                <div class="gcash-info">
+                    <p><strong>Account Name:</strong> {{ gcash_qr.account_name }}</p>
+                    <p><strong>Account Number:</strong> {{ gcash_qr.account_number }}</p>
+                    <p><strong>Amount:</strong> ₱{{ appointment.service.price }}</p>
+                </div>
+                <div class="form-group reference-input">
+                    <label style="font-weight: 600;">Reference Number:</label>
+                    <input type="text" name="reference_number" class="form-control"
+                        placeholder="Enter 13-digit reference number" id="ref-input">
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    GCash QR code is temporarily unavailable. Please choose "Pay Later".
+                </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary btn-block btn-lg" style="height: 60px; font-weight: 700;">
+                    Confirm & Finish
+                </button>
+                <a href="{% url 'booking:my_appointments' %}" class="btn btn-secondary btn-block"
+                    style="margin-top: 1rem;">
+                    Back to Appointments
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleGCash(show) {
+        const gcashArea = document.getElementById('gcash-details-area');
+        const refInput = document.getElementById('ref-input');
+        const cardLater = document.getElementById('card-pay-later');
+        const cardNow = document.getElementById('card-pay-now');
+
+        if (show) {
+            gcashArea.style.display = 'block';
+            refInput.required = true;
+            cardNow.classList.add('active');
+            cardLater.classList.remove('active');
+        } else {
+            gcashArea.style.display = 'none';
+            refInput.required = false;
+            cardNow.classList.remove('active');
+            cardLater.classList.add('active');
+        }
+    }
+
+    // Set initial state
+    document.addEventListener('DOMContentLoaded', () => {
+        toggleGCash(false);
+    });
+</script>
+{% endblock %}

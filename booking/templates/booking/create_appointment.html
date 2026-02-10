@@ -1,0 +1,231 @@
+<!-- booking/templates/booking/create_appointment.html -->
+
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Book Appointment - Barbershop{% endblock %}
+
+{% block extra_css %}
+<style>
+    .time-slots-container {
+        margin: 1.5rem 0;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        min-height: 150px;
+    }
+    
+    .time-slots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 1rem;
+    }
+    
+    .time-slot {
+        padding: 12px;
+        border: 2px solid #dee2e6;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        text-align: center;
+    }
+    
+    .time-slot.available:hover {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .time-slot.selected {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    }
+    
+    .time-slot.unavailable {
+        background: #e9ecef;
+        color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.6;
+        text-decoration: line-through;
+    }
+    
+    .loading-spinner {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .info-message, .error-message {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 6px;
+    }
+    
+    .info-message {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .booking-step {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .booking-step h3 {
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+    
+    .booking-step ol {
+        margin: 0.5rem 0 0 1.5rem;
+    }
+    
+    .booking-step li {
+        margin: 0.3rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 2rem auto;">
+    <div class="card">
+        <div class="card-header">
+            <div style="text-align: center; font-size: 3rem; margin-bottom: 1rem;">📅</div>
+            <h2 style="text-align: center; margin: 0;">Book New Appointment</h2>
+        </div>
+        
+        <div class="booking-step">
+            <h3>📋 How to Book:</h3>
+            <ol>
+                <li>Select your desired service</li>
+                <li>Choose your preferred barber</li>
+                <li>Pick a date</li>
+                <li>Select an available time slot from the grid below</li>
+                <li>Add any special notes (optional)</li>
+                <li>Proceed to payment selection</li>
+            </ol>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.service.id_for_label }}">Service: *</label>
+                {{ form.service }}
+                {% if form.service.errors %}
+                    {% for error in form.service.errors %}
+                        <small style="color: var(--danger-color);">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+                <small style="color: var(--light-text); display: block; margin-top: 0.3rem;">
+                    Choose the service you'd like to book
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.barber.id_for_label }}">Barber: *</label>
+                {{ form.barber }}
+                {% if form.barber.errors %}
+                    {% for error in form.barber.errors %}
+                        <small style="color: var(--danger-color);">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+                <small style="color: var(--light-text); display: block; margin-top: 0.3rem;">
+                    Select your preferred barber
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.appointment_date.id_for_label }}">Date: *</label>
+                {{ form.appointment_date }}
+                {% if form.appointment_date.errors %}
+                    {% for error in form.appointment_date.errors %}
+                        <small style="color: var(--danger-color);">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+                <small style="color: var(--light-text); display: block; margin-top: 0.3rem;">
+                    Pick your preferred date
+                </small>
+            </div>
+            
+            <!-- Time Slots Container -->
+            <div class="form-group">
+                <label>Available Time Slots: *</label>
+                <div id="time-slots-container" class="time-slots-container">
+                    <p class="info-message">Please select a barber and date to see available time slots.</p>
+                </div>
+            </div>
+            
+            <!-- Hidden time input (will be set by JavaScript) -->
+            <div class="form-group" style="display: none;">
+                <label for="{{ form.appointment_time.id_for_label }}">Time: *</label>
+                {{ form.appointment_time }}
+                {% if form.appointment_time.errors %}
+                    {% for error in form.appointment_time.errors %}
+                        <small style="color: var(--danger-color);">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.notes.id_for_label }}">Special Notes (Optional):</label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                    {% for error in form.notes.errors %}
+                        <small style="color: var(--danger-color);">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+                <small style="color: var(--light-text); display: block; margin-top: 0.3rem;">
+                    Any special requests or preferences
+                </small>
+            </div>
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Continue to Payment →</button>
+                <a href="{% url 'dashboard:home' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/booking.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,224 @@
+<!-- booking/templates/booking/my_appointments.html -->
+
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}My Appointments - Barbershop{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-confirmed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .appointment-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .appointment-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .appointment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .appointment-info {
+        flex: 1;
+    }
+
+    .appointment-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .appointment-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .detail-icon {
+        font-size: 1.2rem;
+    }
+
+    .detail-content strong {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--light-text);
+        margin-bottom: 0.2rem;
+    }
+
+    .detail-content span {
+        color: var(--dark-text);
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div
+    style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <h1 style="margin: 0;">📅 My Appointments</h1>
+    <a href="{% url 'booking:create' %}" class="btn btn-primary">+ Book New Appointment</a>
+</div>
+
+{% if appointments %}
+<div class="appointments-list">
+    {% for appointment in appointments %}
+    <div class="appointment-card">
+        <div class="appointment-header">
+            <div class="appointment-info">
+                <h3 style="margin: 0 0 0.5rem 0; color: var(--primary-color);">
+                    {{ appointment.service.name }}
+                </h3>
+                <span class="status-badge status-{{ appointment.status }}">
+                    {{ appointment.get_status_display }}
+                </span>
+            </div>
+            <div class="appointment-actions">
+                <a href="{% url 'booking:appointment_detail' appointment.pk %}" class="btn btn-info btn-sm">
+                    View Details
+                </a>
+                {% if appointment.can_reschedule %}
+                <a href="{% url 'booking:reschedule' appointment.pk %}" class="btn btn-primary btn-sm">
+                    🔄 Reschedule
+                </a>
+                {% endif %}
+                {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                <a href="{% url 'booking:cancel_appointment' appointment.pk %}" class="btn btn-danger btn-sm">
+                    Cancel
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="appointment-details">
+            <div class="detail-item">
+                <span class="detail-icon">📅</span>
+                <div class="detail-content">
+                    <strong>Date</strong>
+                    <span>{{ appointment.appointment_date|date:"M d, Y" }}</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-icon">🕐</span>
+                <div class="detail-content">
+                    <strong>Time</strong>
+                    <span>{{ appointment.appointment_time|time:"g:i A" }}</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-icon">💈</span>
+                <div class="detail-content">
+                    <strong>Barber</strong>
+                    <span>{{ appointment.barber.name }}</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-icon">⏱️</span>
+                <div class="detail-content">
+                    <strong>Duration</strong>
+                    <span>{{ appointment.service.duration_minutes }} min</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-icon">💰</span>
+                <div class="detail-content">
+                    <strong>Price</strong>
+                    <span>₱{{ appointment.service.price }}</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-icon">💳</span>
+                <div class="detail-content">
+                    <strong>Payment</strong>
+                    {% if appointment.payment %}
+                    <span class="status-badge status-{{ appointment.payment.payment_status }}">
+                        {{ appointment.payment.get_payment_status_display }}
+                    </span>
+                    {% else %}
+                    <span style="color: var(--light-text);">Not set</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if appointment.notes %}
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e9ecef;">
+            <strong style="color: var(--light-text); font-size: 0.85rem;">📝 Notes:</strong>
+            <p style="margin: 0.5rem 0 0 0; color: var(--dark-text);">{{ appointment.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div style="text-align: center; padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
+        <h3>No Appointments Yet</h3>
+        <p style="color: var(--light-text); margin-bottom: 2rem;">You haven't made any appointments. Book your first one
+            now!</p>
+        {% if user.is_staff %}
+        <a href="{% url 'dashboard:admin_appointments' %}" class="btn btn-primary">View All Appointments</a>
+        {% else %}
+        <a href="{% url 'booking:create' %}" class="btn btn-primary">Book Your First Appointment</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<a href="{% url 'dashboard:home' %}" class="btn btn-secondary" style="margin-top: 1rem;">🏠 Dashboard</a>
+{% endblock %}

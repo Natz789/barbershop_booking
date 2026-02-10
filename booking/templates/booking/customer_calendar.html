@@ -1,0 +1,70 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Appointment Calendar - Barbershop{% endblock %}
+
+{% block extra_css %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+<style>
+    .calendar-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-top: 1rem;
+    }
+
+    #calendar {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .fc-event {
+        cursor: pointer;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.5rem !important;
+        color: #2c3e50;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1>My Appointment Calendar</h1>
+    <p>View your scheduled appointments in a calendar view.</p>
+</div>
+
+<div class="calendar-container">
+    <div id='calendar'></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            events: "{% url 'booking:calendar_events' %}",
+            eventClick: function (info) {
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                    info.jsEvent.preventDefault();
+                }
+            },
+            eventDidMount: function (info) {
+                var tooltip = 'Barber: ' + info.event.extendedProps.barber + '\nStatus: ' + info.event.extendedProps.status;
+                info.el.title = tooltip;
+            }
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

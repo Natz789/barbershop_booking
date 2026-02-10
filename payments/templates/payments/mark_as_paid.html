@@ -1,0 +1,50 @@
+<!-- payments/templates/payments/mark_as_paid.html -->
+
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Confirm Payment - Barbershop{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 3rem auto;">
+    <div class="card">
+        <div class="card-header">
+            <div style="text-align: center; font-size: 3rem; margin-bottom: 1rem;">✓</div>
+            Confirm Payment Received
+        </div>
+        
+        <div class="alert alert-info">
+            <strong>Are you sure you want to mark this payment as paid?</strong>
+            <p style="margin: 0.5rem 0 0 0;">This will update the payment status to "Paid".</p>
+        </div>
+        
+        <!-- Payment Details -->
+        <div class="info-box">
+            <h3>Payment Details:</h3>
+            <hr>
+            <div class="grid grid-2">
+                <div>
+                    <p><strong>Customer:</strong> {{ payment.appointment.customer.username }}</p>
+                    <p><strong>Service:</strong> {{ payment.appointment.service.name }}</p>
+                    <p><strong>Date:</strong> {{ payment.appointment.appointment_date|date:"M d, Y" }}</p>
+                </div>
+                <div>
+                    <p><strong>Amount:</strong> <span style="color: var(--secondary-color); font-weight: bold;">₱{{ payment.amount }}</span></p>
+                    <p><strong>Method:</strong> {{ payment.get_payment_method_display }}</p>
+                    {% if payment.gcash_reference %}
+                        <p><strong>GCash Ref:</strong> {{ payment.gcash_reference }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="btn-group">
+                <button type="submit" class="btn btn-success" style="flex: 1;">✓ Confirm Payment Received</button>
+                <a href="{% url 'booking:appointment_detail' payment.appointment.pk %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
